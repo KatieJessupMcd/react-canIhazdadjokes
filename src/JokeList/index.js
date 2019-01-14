@@ -7,9 +7,35 @@ class JokeList extends Component {
     super(props);
     this.state = {
       jokes: [],
-      error: false
+      error: false,
+      page: 1
     };
   }
+  updateJokes = async () => {
+    try {
+      const list = await axios.get(
+        `https://icanhazdadjoke.com/search?limit=10&page=${this.state.page}`,
+        {
+          headers: { Accept: 'application/json' }
+        }
+      );
+
+      this.setState(
+        {
+          page: this.state.page + 1,
+          jokes: list.data.results.map(joke => ({
+            ...joke,
+            score: 0
+          }))
+        },
+        () => console.log(this.state.jokes)
+      );
+    } catch (error) {
+      this.setState({
+        error: true
+      });
+    }
+  };
 
   updateScore = (id, action) => {
     // find joke in the list
@@ -38,28 +64,7 @@ class JokeList extends Component {
   };
 
   async componentDidMount() {
-    try {
-      const list = await axios.get(
-        'https://icanhazdadjoke.com/search?limit=10',
-        {
-          headers: { Accept: 'application/json' }
-        }
-      );
-
-      this.setState(
-        {
-          jokes: list.data.results.map(joke => ({
-            ...joke,
-            score: 0
-          }))
-        },
-        () => console.log(this.state.jokes)
-      );
-    } catch (error) {
-      this.setState({
-        error: true
-      });
-    }
+    this.updateJokes();
   }
 
   render() {
@@ -69,21 +74,24 @@ class JokeList extends Component {
       response = <p className="lead">Loading...</p>;
     } else {
       response = (
-        <ul className="list-group">
-          {this.state.jokes
-            // sort needs to go first?
-            .sort((a, b) => (b.score > a.score ? 1 : -1))
-            .map(j => (
-              <li key={j.id} className="list-group-item">
-                <Joke
-                  id={j.id}
-                  text={j.joke}
-                  score={j.score}
-                  updateScore={this.updateScore}
-                />
-              </li>
-            ))}
-        </ul>
+        <React.Fragment>
+          <ul className="list-group">
+            {this.state.jokes
+              // sort needs to go first?
+              .sort((a, b) => (b.score > a.score ? 1 : -1))
+              .map(j => (
+                <li key={j.id} className="list-group-item">
+                  <Joke
+                    id={j.id}
+                    text={j.joke}
+                    score={j.score}
+                    updateScore={this.updateScore}
+                  />
+                </li>
+              ))}
+          </ul>
+          <button onClick={this.updateJokes}> Can I haz more jokes plz</button>
+        </React.Fragment>
       );
     }
     return response;

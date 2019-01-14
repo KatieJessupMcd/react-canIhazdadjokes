@@ -3,8 +3,18 @@ import React, { Component } from 'react';
 class Vote extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      hover: false
+    };
   }
+
+  handleMouseEnter = evt => {
+    this.setState({ hover: true });
+  };
+
+  handleMouseLeave = evt => {
+    this.setState({ hover: false });
+  };
 
   handleClick = evt => {
     this.props.updateScore(this.props.action);
@@ -12,9 +22,15 @@ class Vote extends Component {
 
   render() {
     return (
-      <span onClick={this.handleClick}>
+      <span
+        onMouseEnter={this.handleMouseEnter}
+        onMouseLeave={this.handleMouseLeave}
+        onClick={this.handleClick}
+      >
         <i
-          className={`far fa-thumbs-${this.props.action} ml-3`}
+          className={`fa${this.state.hover ? 's' : 'r'} fa-thumbs-${
+            this.props.action
+          } ml-3`}
           aria-label="Vote up"
         />
       </span>
